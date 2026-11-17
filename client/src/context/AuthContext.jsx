@@ -42,6 +42,18 @@ export function AuthProvider({ children }) {
     throw new Error(res.message || 'Login failed');
   };
 
+  const signup = async (signupData) => {
+    const res = await authApi.signup(signupData);
+    if (res.success && res.data) {
+      const { access_token, user: userData } = res.data;
+      localStorage.setItem('libook_token', access_token);
+      setToken(access_token);
+      setUser(userData);
+      return userData;
+    }
+    throw new Error(res.message || 'Signup failed');
+  };
+
   const logout = () => {
     localStorage.removeItem('libook_token');
     setToken(null);
@@ -53,6 +65,7 @@ export function AuthProvider({ children }) {
     token,
     loading,
     login,
+    signup,
     logout,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',

@@ -6,6 +6,13 @@ class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1, description="Username or email")
     password: str = Field(..., min_length=1, description="Password")
 
+class SignupRequest(BaseModel):
+    full_name: str = Field(..., min_length=2, max_length=200, description="Full name of member")
+    email: str = Field(..., min_length=5, max_length=255, description="Valid email address")
+    password: str = Field(..., min_length=6, max_length=100, description="Account password (min 6 chars)")
+    username: Optional[str] = Field(None, min_length=3, max_length=100, description="Optional custom username")
+    phone: Optional[str] = Field(None, max_length=30, description="Contact phone number")
+
 class UserOut(BaseModel):
     user_id: int
     username: str

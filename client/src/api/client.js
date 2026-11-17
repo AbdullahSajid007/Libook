@@ -48,6 +48,11 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ username, password })
     }),
+  signup: (userData) =>
+    apiFetch('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    }),
   logout: () => 
     apiFetch('/auth/logout', { method: 'POST' }),
   getMe: () => 
