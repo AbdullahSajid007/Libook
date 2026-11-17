@@ -1,0 +1,14 @@
+%% Level 0 Context Diagram (DFD)
+graph TD
+    subgraph External_Entities
+        Librarian["Librarian / Administrator"]
+        Member["Registered Member"]
+    end
+
+    System(("0.0<br/>University Library<br/>Management System"))
+
+    Librarian -->|"1. Credentials, Book/Member Info, Borrow/Return Actions"| System
+    System -->|"2. Auth Token, Dashboard Stats, Lists, Confirmation"| Librarian
+
+    Member -->|"3. Credentials, Search Query, History Request"| System
+    System -->|"4. Catalogue Results, Availability, Personal Loan History"| Member

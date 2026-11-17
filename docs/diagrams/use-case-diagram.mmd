@@ -1,0 +1,31 @@
+%% Use Case Diagram for University Library Management System
+graph LR
+    subgraph Actors
+        Admin["👨‍💼 Librarian / Administrator"]
+        Member["🎓 Registered Member"]
+    end
+
+    subgraph "Library Management System (LMS)"
+        UC1["FR-01, 02, 03: Login / Logout"]
+        UC2["FR-54..59: View Dashboard"]
+        UC3["FR-07..15: Manage Books (Add, View, Update, Remove)"]
+        UC4["FR-16..23: Manage Members (Register, View, Update, Remove)"]
+        UC5["FR-30..38: Create Borrowing Record"]
+        UC6["FR-39..44: Process Book Return"]
+        UC7["FR-45..48: View Overdue Loans"]
+        UC8["FR-24..29: Browse & Search Catalogue"]
+        UC9["FR-49..53: View Own Borrowing History"]
+    end
+
+    Admin --> UC1
+    Admin --> UC2
+    Admin --> UC3
+    Admin --> UC4
+    Admin --> UC5
+    Admin --> UC6
+    Admin --> UC7
+    Admin --> UC8
+
+    Member --> UC1
+    Member --> UC8
+    Member --> UC9

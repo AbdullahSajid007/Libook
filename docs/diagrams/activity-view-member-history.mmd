@@ -1,0 +1,18 @@
+%% Activity Diagram: View Member History
+stateDiagram-v2
+    [*] --> NavigateHistory: Member navigates to "My Borrowing History"
+    NavigateHistory --> SendMeLoans: GET /api/members/me/loans with Bearer Token
+    SendMeLoans --> ExtractAuth: Backend verifies JWT and extracts user_id & member_id
+    
+    state has_member <<choice>>
+    ExtractAuth --> has_member: Is user linked to valid Member?
+    
+    has_member --> ForbiddenAccess: No member account linked
+    ForbiddenAccess --> [*]: Return 403 Forbidden
+    
+    has_member --> FetchLoans: Yes, authenticated member
+    FetchLoans --> QueryDB: SELECT * FROM loans WHERE member_id = session.member_id
+    QueryDB --> DeriveStatus: Compute status for each loan (Borrowed, Overdue, Returned)
+    DeriveStatus --> SplitLists: Group into "Currently Borrowed" and "Returned History"
+    SplitLists --> RenderHistoryUI: Display cards with book details, due dates, badges
+    RenderHistoryUI --> [*]

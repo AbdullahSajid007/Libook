@@ -1,0 +1,46 @@
+%% Entity Relationship Diagram (ERD)
+erDiagram
+    USERS {
+        int user_id PK
+        string username UK
+        string password_hash
+        string role "ADMIN | MEMBER"
+        int member_id FK "Nullable"
+        datetime created_at
+    }
+
+    MEMBERS {
+        int member_id PK
+        string full_name
+        string email UK
+        string phone
+        date registration_date
+        datetime created_at
+        datetime updated_at
+    }
+
+    BOOKS {
+        int book_id PK
+        string title
+        string author
+        string category
+        string isbn UK "Nullable, unique if present"
+        int total_copies ">= 0"
+        int available_copies "0 <= available <= total"
+        datetime created_at
+        datetime updated_at
+    }
+
+    LOANS {
+        int loan_id PK
+        int member_id FK
+        int book_id FK
+        date borrowed_at
+        date due_date
+        date returned_at "Nullable until returned"
+        datetime created_at
+    }
+
+    USERS |o--|| MEMBERS : "links to (if role=MEMBER)"
+    MEMBERS ||--o{ LOANS : "borrows"
+    BOOKS ||--o{ LOANS : "included in"

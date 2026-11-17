@@ -1,0 +1,69 @@
+%% Level 1 Data Flow Diagram (DFD)
+graph TD
+    %% External Entities
+    Librarian["Librarian / Administrator"]
+    Member["Registered Member"]
+
+    %% Data Stores
+    D1[("D1: Users")]
+    D2[("D2: Books")]
+    D3[("D3: Members")]
+    D4[("D4: Loans")]
+
+    %% Processes
+    P1(("1.0<br/>Authenticate<br/>User"))
+    P2(("2.0<br/>Manage<br/>Books"))
+    P3(("3.0<br/>Manage<br/>Members"))
+    P4(("4.0<br/>Browse & Search<br/>Catalogue"))
+    P5(("5.0<br/>Manage<br/>Borrowing"))
+    P6(("6.0<br/>Process<br/>Returns"))
+    P7(("7.0<br/>Generate Dashboard<br/>& Reports"))
+    P8(("8.0<br/>Retrieve Member<br/>History"))
+
+    %% Data Flows - Auth
+    Librarian -->|"Login Credentials"| P1
+    Member -->|"Login Credentials"| P1
+    P1 <-->|"Verify Hash / Token"| D1
+    P1 -->|"Auth Token & Role"| Librarian
+    P1 -->|"Auth Token & Role"| Member
+
+    %% Data Flows - Book Management
+    Librarian -->|"Book Details (CRUD)"| P2
+    P2 <-->|"Read / Write Books"| D2
+    P2 -->|"Book Records / Status"| Librarian
+
+    %% Data Flows - Member Management
+    Librarian -->|"Member Details (CRUD)"| P3
+    P3 <-->|"Read / Write Members"| D3
+    P3 -->|"Member Records / Status"| Librarian
+
+    %% Data Flows - Catalogue Search
+    Member -->|"Search Query (Title/Author)"| P4
+    P4 <--|"Read Book Data & Copies"| D2
+    P4 -->|"Book List & Availability"| Member
+
+    %% Data Flows - Borrowing
+    Librarian -->|"Borrow Request (Member + Book)"| P5
+    P5 <-->|"Check Availability & Decrement Copy"| D2
+    P5 <--|"Verify Member ID"| D3
+    P5 -->|"Write New Loan"| D4
+    P5 -->|"Borrowing Confirmation"| Librarian
+
+    %% Data Flows - Returns
+    Librarian -->|"Return Request (Loan ID)"| P6
+    P6 <-->|"Update returned_at"| D4
+    P6 <-->|"Increment Available Copies"| D2
+    P6 -->|"Return Confirmation"| Librarian
+
+    %% Data Flows - Dashboard & Overdue
+    Librarian -->|"Request Dashboard / Overdue"| P7
+    P7 <--|"Count Total Books"| D2
+    P7 <--|"Count Members"| D3
+    P7 <--|"Count Active / Overdue Loans"| D4
+    P7 -->|"Dashboard Metrics & Overdue Table"| Librarian
+
+    %% Data Flows - Member History
+    Member -->|"Request My History"| P8
+    P8 <--|"Query Loans for Member"| D4
+    P8 <--|"Read Book Details"| D2
+    P8 -->|"Current & Past Loans"| Member

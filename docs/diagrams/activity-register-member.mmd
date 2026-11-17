@@ -1,0 +1,26 @@
+%% Activity Diagram: Register Member
+stateDiagram-v2
+    [*] --> OpenMemberForm: Librarian opens Register Member
+    OpenMemberForm --> InputData: Enter Full Name, Email, Phone, Registration Date
+    InputData --> ValidateClient: Submit form
+    ValidateClient --> ValidateServer: Send POST /api/members
+    
+    state format_valid <<choice>>
+    ValidateServer --> format_valid: Email/Phone valid format?
+    
+    format_valid --> RejectFormat: No
+    RejectFormat --> OpenMemberForm: Show format validation error
+    
+    format_valid --> CheckEmailUniqueness: Yes
+    
+    state email_unique <<choice>>
+    CheckEmailUniqueness --> email_unique: Is email already registered?
+    
+    email_unique --> RejectEmail: Yes
+    RejectEmail --> OpenMemberForm: Show duplicate email error (FR-20)
+    
+    email_unique --> CreateMember: No
+    CreateMember --> CreateOptionalLogin: Generate Member record (and optional login)
+    CreateOptionalLogin --> CommitMember: Commit transaction in PostgreSQL
+    CommitMember --> ShowMemberSuccess: Return 201 Created & display in member table
+    ShowMemberSuccess --> [*]

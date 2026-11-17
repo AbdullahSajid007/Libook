@@ -1,0 +1,24 @@
+%% Activity Diagram: Admin/Member Login
+stateDiagram-v2
+    [*] --> EnterCredentials: User enters username and password
+    EnterCredentials --> ValidateInput: Submit form
+    ValidateInput --> CheckDB: Query User record
+    CheckDB --> VerifyHash: Check bcrypt password_hash
+    
+    state credentials_valid <<choice>>
+    VerifyHash --> credentials_valid: Is password valid?
+    
+    credentials_valid --> ShowError: No
+    ShowError --> EnterCredentials: Show clear error message (FR-02)
+    
+    credentials_valid --> GenerateToken: Yes
+    GenerateToken --> CheckRole: Issue secure JWT
+    
+    state role_choice <<choice>>
+    CheckRole --> role_choice: Check user role
+    
+    role_choice --> AdminDashboard: Role is ADMIN
+    role_choice --> MemberCatalogue: Role is MEMBER
+    
+    AdminDashboard --> [*]
+    MemberCatalogue --> [*]

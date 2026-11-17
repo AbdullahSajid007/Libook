@@ -1,0 +1,26 @@
+%% Activity Diagram: Add Book
+stateDiagram-v2
+    [*] --> OpenForm: Librarian opens Add Book form
+    OpenForm --> FillDetails: Input Title, Author, Category, ISBN, Total Copies
+    FillDetails --> ValidateClient: Submit form
+    ValidateClient --> ValidateServer: Send POST /api/books with Bearer Token
+    
+    state valid_inputs <<choice>>
+    ValidateServer --> valid_inputs: Fields valid & total_copies >= 0?
+    
+    valid_inputs --> RejectValidation: No
+    RejectValidation --> OpenForm: Show validation error (FR-10)
+    
+    valid_inputs --> CheckISBN: Yes
+    
+    state isbn_check <<choice>>
+    CheckISBN --> isbn_check: ISBN already exists in DB?
+    
+    isbn_check --> RejectDuplicate: Yes
+    RejectDuplicate --> OpenForm: Show duplicate ISBN error (FR-11)
+    
+    isbn_check --> SaveBook: No
+    SaveBook --> SetCopies: Set available_copies = total_copies
+    SetCopies --> PersistDB: Commit to PostgreSQL
+    PersistDB --> SuccessUI: Return 201 Created & show in book list
+    SuccessUI --> [*]

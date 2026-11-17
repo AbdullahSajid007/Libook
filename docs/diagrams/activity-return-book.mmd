@@ -1,0 +1,22 @@
+%% Activity Diagram: Return Book
+stateDiagram-v2
+    [*] --> ViewActiveLoans: Librarian views active loans
+    ViewActiveLoans --> SelectLoan: Librarian clicks "Mark as Returned"
+    SelectLoan --> PromptConfirm: System requests confirmation with Return Date
+    PromptConfirm --> SendReturnReq: PATCH /api/loans/:id/return
+    SendReturnReq --> StartTx: Begin DB Transaction
+    StartTx --> FetchLoan: Query loan record by loan_id
+    
+    state loan_exists <<choice>>
+    FetchLoan --> loan_exists: Loan exists and returned_at is NULL?
+    
+    loan_exists --> RejectDuplicateReturn: Already returned (not NULL)
+    RejectDuplicateReturn --> RollbackTx1: Return 400/409 (Loan already returned FR-43)
+    RollbackTx1 --> [*]
+    
+    loan_exists --> ProcessReturn: Yes, currently active
+    ProcessReturn --> UpdateLoan: Set returned_at = current timestamp
+    UpdateLoan --> IncrementCopy: Increment book.available_copies by 1
+    IncrementCopy --> CommitTx: Commit Transaction atomically (FR-42, FR-44)
+    CommitTx --> UpdateUI: Return 200 OK & update status to Returned
+    UpdateUI --> [*]

@@ -1,0 +1,114 @@
+%% Class Diagram for University Library Management System
+classDiagram
+    direction TB
+
+    class UserRole {
+        <<enumeration>>
+        ADMIN
+        MEMBER
+    }
+
+    class LoanStatus {
+        <<enumeration>>
+        BORROWED
+        OVERDUE
+        RETURNED
+    }
+
+    class User {
+        +int user_id
+        +string username
+        +string password_hash
+        +UserRole role
+        +int member_id
+        +datetime created_at
+        +verify_password(plain_password) bool
+    }
+
+    class Book {
+        +int book_id
+        +string title
+        +string author
+        +string category
+        +string isbn
+        +int total_copies
+        +int available_copies
+        +datetime created_at
+        +datetime updated_at
+        +is_available() bool
+        +borrow_copy() void
+        +return_copy() void
+    }
+
+    class Member {
+        +int member_id
+        +string full_name
+        +string email
+        +string phone
+        +date registration_date
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class Loan {
+        +int loan_id
+        +int member_id
+        +int book_id
+        +date borrowed_at
+        +date due_date
+        +date returned_at
+        +datetime created_at
+        +get_status() LoanStatus
+        +is_overdue() bool
+    }
+
+    class AuthService {
+        +authenticate_user(username, password) TokenResponse
+        +get_current_user(token) User
+        +verify_admin(user) void
+    }
+
+    class BookService {
+        +list_books(search, skip, limit) List~Book~
+        +get_book(book_id) Book
+        +create_book(data) Book
+        +update_book(book_id, data) Book
+        +delete_book(book_id) bool
+    }
+
+    class MemberService {
+        +list_members(search, skip, limit) List~Member~
+        +get_member(member_id) Member
+        +create_member(data) Member
+        +update_member(member_id, data) Member
+        +delete_member(member_id) bool
+    }
+
+    class LoanService {
+        +borrow_book(member_id, book_id, due_date) Loan
+        +return_book(loan_id) Loan
+        +list_loans(status, member_id, book_id) List~Loan~
+        +get_overdue_loans() List~Loan~
+        +get_member_history(member_id) List~Loan~
+    }
+
+    class DashboardService {
+        +get_summary_counts() DashboardSummary
+    }
+
+    %% Relationships
+    User "0..1" --> "1" Member : links to
+    Member "1" --> "0..*" Loan : has
+    Book "1" --> "0..*" Loan : lent in
+    Loan --> LoanStatus : has
+    User --> UserRole : has
+
+    AuthService ..> User : manages
+    BookService ..> Book : operates on
+    MemberService ..> Member : operates on
+    LoanService ..> Loan : manages
+    LoanService ..> Book : updates availability
+    LoanService ..> Member : verifies
+    DashboardService ..> Book : queries
+    DashboardService ..> Member : queries
+    DashboardService ..> Loan : queries

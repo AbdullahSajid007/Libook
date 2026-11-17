@@ -1,0 +1,11 @@
+%% Activity Diagram: Search Catalogue
+stateDiagram-v2
+    [*] --> OpenCatalogue: Member opens Book Catalogue
+    OpenCatalogue --> InputQuery: Type search term in search bar
+    InputQuery --> ChooseFilter: Select Filter (Title, Author, or All)
+    ChooseFilter --> TriggerSearch: Submit query or debounce input
+    TriggerSearch --> FetchAPI: GET /api/books?search=...
+    FetchAPI --> QueryPostgres: SQL ILIKE search on title and author
+    QueryPostgres --> FormatResults: Compute availability badge (Available vs Borrowed out)
+    FormatResults --> DisplayCards: Render responsive book grid
+    DisplayCards --> [*]

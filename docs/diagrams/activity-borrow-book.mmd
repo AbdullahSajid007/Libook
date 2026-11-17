@@ -1,0 +1,30 @@
+%% Activity Diagram: Borrow Book
+stateDiagram-v2
+    [*] --> OpenBorrowModal: Librarian navigates to Borrow Book
+    OpenBorrowModal --> SelectMemberBook: Select Member, Book, Borrow Date, Due Date
+    SelectMemberBook --> ValidateClient: Click "Confirm Borrow"
+    ValidateClient --> ServerValidation: POST /api/loans
+    ServerValidation --> VerifyEntities: Check Member & Book exist
+    
+    state entities_exist <<choice>>
+    VerifyEntities --> entities_exist: Do both exist?
+    
+    entities_exist --> StopNotFound: No
+    StopNotFound --> [*]: Return 404 Not Found
+    
+    entities_exist --> CheckAvailable: Yes
+    CheckAvailable --> BeginTx: Start DB Transaction with row lock (FOR UPDATE)
+    
+    state copy_check <<choice>>
+    BeginTx --> copy_check: Is available_copies > 0?
+    
+    copy_check --> RollbackEmpty: No
+    RollbackEmpty --> ShowNoCopyError: Rollback transaction (FR-36)
+    ShowNoCopyError --> [*]: Return 409 Conflict (No copies available)
+    
+    copy_check --> ExecuteBorrow: Yes
+    ExecuteBorrow --> InsertLoan: Insert into loans (borrowed_at, due_date, returned_at=NULL)
+    InsertLoan --> DecrementCopy: Decrement book.available_copies by 1
+    DecrementCopy --> CommitTx: Commit Transaction atomically (FR-34)
+    CommitTx --> ShowSuccess: Return 201 Created & update availability UI
+    ShowSuccess --> [*]
