@@ -1,0 +1,17 @@
+A university wants to develop a web-based Library Management System to manage its library operations more efficiently. Currently, the library maintains book records and borrowing information manually, which makes it difficult to track available books, manage members, and monitor borrowed books.
+
+The university has hired you to develop a simple web-based system that will solve these problems.
+
+The system should allow the librarian (administrator) to log in and manage the library's book collection. The librarian should be able to add new books, update existing book information, remove books, and view all registered books. Each book should contain a unique book ID, title, author, category, ISBN, and the total number of available copies.
+
+The librarian should also be able to register library members. Each member should have a unique member ID, full name, email address, phone number, and registration date. The librarian should be able to view, update, and remove member records.
+
+Registered members should be able to browse the available books and search for books using their title or author name.
+
+A member can borrow a book if at least one copy is available. When a book is borrowed, the system should record the member, the borrowed book, the borrowing date, and the expected return date. The available copy count should automatically decrease after a successful borrowing operation.
+
+When a member returns a book, the librarian should be able to update the borrowing record. The available copy count should automatically increase. The system should also allow the librarian to view all borrowing records and identify books that have not been returned by their expected return dates.
+
+A member should be able to view their own borrowing history, including currently borrowed books and previously returned books.
+
+The system should provide a dashboard for the librarian showing the total number of books, total registered members, currently borrowed books, and overdue books.
