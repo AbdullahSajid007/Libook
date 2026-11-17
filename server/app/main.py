@@ -65,6 +65,33 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    err_str = str(exc)
+    if "could not translate host name" in err_str or "connection" in err_str.lower():
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": (
+                    "Database connection error: Could not reach the database. "
+                    "Please check your DATABASE_URL environment variable in Render. "
+                    "For Supabase, use the Connection Pooler URL (IPv4): "
+                    "postgresql://postgres.[project-ref]:[PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres"
+                ),
+                "detail": err_str,
+                "data": None
+            }
+        )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "success": False,
+            "message": f"Server error: {err_str}",
+            "data": None
+        }
+    )
+
 # Register API Routers
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(books.router, prefix=settings.API_PREFIX)
@@ -72,12 +99,24 @@ app.include_router(members.router, prefix=settings.API_PREFIX)
 app.include_router(loans.router, prefix=settings.API_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_PREFIX)
 
-@app.get(f"{settings.API_PREFIX}/health", tags=["Health"])
+@app.api_route(f"{settings.API_PREFIX}/health", methods=["GET", "HEAD"], tags=["Health"])
 def health_check():
+    db_status = "ok"
+    db_detail = None
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as e:
+        db_status = "error"
+        db_detail = str(e)
+
     return {
-        "status": "healthy",
+        "status": "healthy" if db_status == "ok" else "degraded",
         "app": settings.PROJECT_NAME,
-        "version": settings.VERSION
+        "version": settings.VERSION,
+        "database": db_status,
+        "database_error": db_detail
     }
 
 # Serve React static frontend in production if built
@@ -85,7 +124,7 @@ client_dist_path = os.path.join(os.path.dirname(__file__), "..", "..", "client",
 if os.path.exists(client_dist_path):
     app.mount("/assets", StaticFiles(directory=os.path.join(client_dist_path, "assets")), name="assets")
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     async def serve_spa(full_path: str):
         # Don't hijack API routes
         if full_path.startswith("api"):
