@@ -10,9 +10,6 @@ from server.app.config import settings
 from server.app.database import engine, Base
 from server.app.routes import auth, books, members, loans, dashboard
 
-# Ensure tables exist on startup
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -20,6 +17,15 @@ app = FastAPI(
     redoc_url=f"{settings.API_PREFIX}/redoc",
     openapi_url=f"{settings.API_PREFIX}/openapi.json"
 )
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        Base.metadata.create_all(bind=engine)
+        from server.app.seed import seed_database
+        seed_database()
+    except Exception as e:
+        print(f"Startup notice: {e}")
 
 # CORS Middleware
 app.add_middleware(
