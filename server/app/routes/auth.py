@@ -6,7 +6,7 @@ from server.app.models.user import User
 from server.app.models.member import Member
 from server.app.schemas.auth import LoginRequest, SignupRequest, TokenResponse, UserOut
 from server.app.schemas.common import ApiResponse
-from server.app.security import verify_password, get_password_hash, create_access_token
+from server.app.security import verify_password, hash_password, create_access_token
 from server.app.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -91,7 +91,7 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
     # 2. Create user credentials with role MEMBER
     new_user = User(
         username=candidate_username,
-        password_hash=get_password_hash(request.password),
+        password_hash=hash_password(request.password),
         role="MEMBER",
         member_id=new_member.member_id
     )
